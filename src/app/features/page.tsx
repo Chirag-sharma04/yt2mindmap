@@ -128,7 +128,7 @@ export default function FeaturesPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg text-slate-900">Insight Prompts</h3>
-                        <p className="text-slate-600">Guided reflection questions that help you process what you're learning</p>
+                        <p className="text-slate-600">Guided reflection questions that help you process what you&#39;re learning</p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -365,7 +365,7 @@ export default function FeaturesPage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col h-full">
                     <div className="mb-6">
-                      <p className="text-slate-700 italic">"{testimonial.quote}"</p>
+                      <p className="text-slate-700 italic">{testimonial.quote}</p>
                     </div>
                     <div className="mt-auto flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full overflow-hidden">
