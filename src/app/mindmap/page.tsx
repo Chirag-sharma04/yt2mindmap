@@ -17,6 +17,7 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [progress, setprogress] = useState<ProgressData | null>(null);
+    const [position, setPosition] = useState(0);
     // create an array of html urls. Each successive request from clients should fetch the next url in the array
     // Create a container for the editor
     
@@ -68,26 +69,54 @@ export default function Home() {
         });
         if (response.ok) {
           const { taskId } = await response.json();
-          const eventSource = new EventSource(`http://localhost:8000/sse/${taskId}`);
-          await fetch('http://localhost:8000/process-queue', {
-            cache: 'no-store',
-        });
-          eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            setprogress(data)
-            if (data.status === 'Complete') {
-              eventSource.close();
-              setTimeout(() => {
-                fetchHtmlContent();
+          let eventSource: EventSource | null = null;
+          
+          const checkQueuePosition = async () => {
+            const queueResponse = await fetch(`/api/queue-position/${taskId}`, {
+              cache: 'no-store',
+            });
+            const queueData = await queueResponse.json();
+            setPosition(queueData.position);
+            if (queueData.position === 1) {
+              clearInterval(intervalId);
+              // Add 1 second delay before processing
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              fetch("http://localhost:8000/process-queue");
+              
+              // Initialize EventSource only when position is 1
+              eventSource = new EventSource(`http://localhost:8000/sse/${taskId}`);
+              eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('SSE Message:', data);
+                setprogress(data);
+                if (data.status === 'Complete') {
+                  eventSource?.close();
+                  setTimeout(() => {
+                    fetchHtmlContent();
+                    setLoading(false);
+                    setprogress(null);
+                  }, 1000);
+                }
+              };
+              eventSource.onerror = (error) => {
+                console.error('SSE Error:', error);
+                eventSource?.close();
                 setLoading(false);
-                setprogress(null);
-              }, 1000);
+                clearInterval(intervalId);
+              };
             }
           };
-          eventSource.onerror = (error) => {
-            console.error('SSE Error:', error);
-            eventSource.close();
-            setLoading(false);
+          
+          const intervalId = setInterval(checkQueuePosition, 10000);
+          // Initial check
+          await checkQueuePosition();
+          
+          // Cleanup interval and eventSource on component unmount
+          return () => {
+            clearInterval(intervalId);
+            if (eventSource) {
+              eventSource.close();
+            }
           };
         } else {
           const error = await response.json();
@@ -124,7 +153,7 @@ export default function Home() {
         {/* Display the message only when loading */}
         {loading && (
           <div className="justify-center">  
-            <p>{progress?.message || 'Processing your request...'}</p>
+            <p>{progress?.message || position || "Processing"}</p>
             </div>
         )
         }
