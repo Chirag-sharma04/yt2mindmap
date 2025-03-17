@@ -21,7 +21,7 @@ export async function sendMessageToQueue(message: any): Promise<void> {
         // Send message to queue
         await queueClient.sendMessage(encodedMessage);
         
-        console.log('Message sent to Azure Storage Queue successfully');
+        console.log(`Message sent to Azure Storage Queue ${queueName} successfully`);
     } catch (error) {
         console.error('Error sending message to Azure Storage Queue:', error);
         throw error;

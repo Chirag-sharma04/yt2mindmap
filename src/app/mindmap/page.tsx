@@ -69,6 +69,9 @@ export default function Home() {
         if (response.ok) {
           const { taskId } = await response.json();
           const eventSource = new EventSource(`http://localhost:8000/sse/${taskId}`);
+          await fetch('http://localhost:8000/process-queue', {
+            cache: 'no-store',
+        });
           eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             setprogress(data)
