@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect,useState, useCallback } from 'react';
 
 interface TurnstileProps {
   onVerify: (token: string) => void;
@@ -9,13 +8,28 @@ interface TurnstileProps {
 
 declare global {
   interface Window {
-    turnstile: any;
-    onLoadTurnstileCallback: () => void;
+    turnstile: {
+      render: (selector: string, config: {
+        sitekey: string | undefined,
+        callback: (token: string) => void
+      }) => void;
+      remove: (selector: string) => void;
+    };
+    onLoadTurnstileCallback?: () => void;
   }
 }
 
 export default function Turnstile({ onVerify }: TurnstileProps) {
-  const router = useRouter();
+  const [isVerified, setIsVerified] = useState(false);
+
+  useEffect(() => {
+    const storedVerification = sessionStorage.getItem('turnstile_verified');
+    if (storedVerification) {
+      // Skip onVerify callback for stored tokens to prevent usage count increment
+      setIsVerified(true);
+      return;
+    }
+  }, []);
 
   const onLoad = useCallback(() => {
     if (!window.turnstile) {
@@ -26,6 +40,7 @@ export default function Turnstile({ onVerify }: TurnstileProps) {
     window.turnstile.render('#turnstile-container', {
       sitekey: process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY,
       callback: (token: string) => {
+        sessionStorage.setItem('turnstile_verified', token);
         onVerify(token);
       },
     });
@@ -72,5 +87,5 @@ export default function Turnstile({ onVerify }: TurnstileProps) {
 
   }, [onLoad]);
 
-  return <div id="turnstile-container" className="flex justify-center my-4" />;
+  return isVerified ? null : <div id="turnstile-container" className="flex justify-center my-4" />;
 }

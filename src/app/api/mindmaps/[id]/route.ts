@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
 const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params:  Promise<{ id : string }> }) {
   try {
     const session = await getServerSession();
     if (!session?.user?.email) {
@@ -16,12 +16,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const containerClient = blobServiceClient.getContainerClient(containerName);
     
     // Get the HTML content blob
-    const blobName = `${params.id}.html`;
+    const { id } = await params;
+    const blobName = `${id}.html`;
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
     
     // Download the HTML content
     const downloadResponse = await blockBlobClient.download();
-    const htmlContent = await streamToString(downloadResponse.readableStreamBody);
+    const htmlContent = await streamToString(downloadResponse.readableStreamBody || null);
 
     return NextResponse.json({ htmlContent });
   } catch (error) {
@@ -38,9 +39,9 @@ async function streamToString(readableStream: NodeJS.ReadableStream | null): Pro
     return '';
   }
 
-  const chunks: Uint8Array[] = [];
+  const chunks: Buffer[] = [];
   for await (const chunk of readableStream) {
-    chunks.push(chunk);
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
   return Buffer.concat(chunks).toString('utf-8');
 }

@@ -16,7 +16,7 @@ export default function LoginPage() {
     if (session) {
       router.push("/");
     }
-  }, [router]);
+  }, [router, session]);
 
   if (status === "loading") {
     return (

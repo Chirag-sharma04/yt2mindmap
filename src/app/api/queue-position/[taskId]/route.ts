@@ -4,9 +4,9 @@ import { QueueServiceClient } from '@azure/storage-queue';
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
 const queueName = process.env.AZURE_QUEUE_NAME || 'taskade-queue-1';
 
-export async function GET(request: Request, { params }: { params: { taskId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ taskId:string }> }) {
     try {
-        const taskId = params.taskId;
+const taskId = (await params).taskId;
         console.log("Task id:", taskId);
 
         if (!taskId) {

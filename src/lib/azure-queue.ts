@@ -3,7 +3,7 @@ import { QueueServiceClient } from '@azure/storage-queue';
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
 const queueName = process.env.AZURE_QUEUE_NAME || 'taskade-queue-1';
 
-export async function sendMessageToQueue(message: any): Promise<void> {
+export async function sendMessageToQueue(message: { transcript: string; taskId: string }): Promise<void> {
     try {
         if (!connectionString) {
             throw new Error('Azure Storage connection string is not configured');

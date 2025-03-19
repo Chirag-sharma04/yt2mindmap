@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession();
     if (!session?.user?.email) {
@@ -84,14 +84,18 @@ export async function GET(request: Request) {
   }
 }
 
-async function streamToString(readableStream: NodeJS.ReadableStream | null): Promise<string> {
+async function streamToString(readableStream: NodeJS.ReadableStream | undefined | null): Promise<string> {
   if (!readableStream) {
     return '';
   }
 
-  const chunks: Uint8Array[] = [];
+  const chunks: Buffer[] = [];
   for await (const chunk of readableStream) {
-    chunks.push(chunk);
+    if (Buffer.isBuffer(chunk)) {
+      chunks.push(chunk);
+    } else {
+      chunks.push(Buffer.from(chunk));
+    }
   }
   return Buffer.concat(chunks).toString('utf-8');
 }
