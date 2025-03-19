@@ -1,8 +1,10 @@
+'use client'
 import { Brain, PlayCircle, Zap, BookOpen, Network, Edit3, Save, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-
+import { useRouter } from "next/navigation";
 export default function HomePage() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       
@@ -18,7 +20,7 @@ export default function HomePage() {
             self-efficacy through AI-powered mind mapping and a bit of creativity!
           </p>
           <div className="flex gap-4 pt-4">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6">Start Mapping</Button>
+            <Button onClick={()=>{router.push('/mindmap')}} className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-6">Start Mapping</Button>
             
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function HomePage() {
             Transform Your Learning with <span className="text-purple-600">Mind Mapping</span>
           </h2>
           <p className="text-slate-600 text-center max-w-2xl mx-auto mb-16">
-            Don't just watch - engage with knowledge and turn insights into mastery.
+            Don&#39;t just watch - engage with knowledge and turn insights into mastery.
           </p>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -198,7 +200,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">The Pareto Principle of Learning</h2>
           <p className="text-slate-600 text-center max-w-2xl mx-auto mb-16">
-            You'll only use 20% of what you watch. Make that 20% count.
+            You&#39;ll only use 20% of what you watch. Make that 20% count.
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

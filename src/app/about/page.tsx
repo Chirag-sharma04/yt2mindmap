@@ -1,4 +1,4 @@
-import { Brain, BookOpen, Lightbulb, ArrowRight, Users, Target } from 'lucide-react';
+import { Brain, BookOpen, Lightbulb, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default function AboutPage() {
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Our Mission</h1>
           <p className="text-xl text-slate-700 mb-8">
-            We're transforming how people learn from online content by bridging the gap between passive consumption and active mastery.
+            We&#39;re transforming how people learn from online content by bridging the gap between passive consumption and active mastery.
           </p>
           <div className="flex justify-center gap-4">
             <Button asChild className="bg-purple-600 hover:bg-purple-700">
@@ -181,7 +181,7 @@ export default function AboutPage() {
                   <h3 className="text-xl font-semibold text-slate-900 mb-2">{item.title}</h3>
                   <p className="text-slate-700 mb-4">{item.description}</p>
                   <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-600">
-                    <p className="text-sm italic text-slate-700">"{item.prompt}"</p>
+                    <p className="text-sm italic text-slate-700">{item.prompt}</p>
                   </div>
                 </CardContent>
               </Card>
