@@ -14,32 +14,33 @@ export async function POST(request: Request) {
     }
 
     const { title, youtubeUrl, htmlContent } = await request.json();
-    const containerName = session.user.email.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const containerName = 'html';
     const containerClient = blobServiceClient.getContainerClient(containerName);
     
     // Create container if it doesn't exist
     await containerClient.createIfNotExists();
 
+    const userEmail = session.user.email.toLowerCase();
     const mindmapId = uuidv4();
-    const blobName = `${mindmapId}.html`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-    // Upload the mindmap HTML content
-    await blockBlobClient.upload(htmlContent, htmlContent.length);
-
-    // Save metadata in a separate blob
-    const metadataBlobClient = containerClient.getBlockBlobClient(`${mindmapId}.json`);
+    
+    // Save metadata
+    const metadataBlobName = `${userEmail}/${mindmapId}.json`;
+    const metadataBlobClient = containerClient.getBlockBlobClient(metadataBlobName);
     const metadata = {
       id: mindmapId,
       title,
       youtubeUrl,
       createdAt: new Date().toISOString(),
     };
-
     await metadataBlobClient.upload(
       JSON.stringify(metadata),
       JSON.stringify(metadata).length
     );
+
+    // Save HTML content
+    const htmlBlobName = `${userEmail}/${mindmapId}.html`;
+    const htmlBlobClient = containerClient.getBlockBlobClient(htmlBlobName);
+    await htmlBlobClient.upload(htmlContent, htmlContent.length);
 
     return NextResponse.json(metadata);
   } catch (error) {
@@ -58,13 +59,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const containerName = session.user.email.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const containerName = 'html';
     const containerClient = blobServiceClient.getContainerClient(containerName);
+    const userEmail = session.user.email.toLowerCase();
 
-    // List all JSON metadata blobs
+    // List all metadata blobs for this user
     const mindmaps = [];
-    for await (const blob of containerClient.listBlobsFlat()) {
-      if (blob.name.endsWith('.json')) {
+    for await (const blob of containerClient.listBlobsByHierarchy('/', { prefix: `${userEmail}/` })) {
+      if (blob.kind === 'blob' && blob.name.endsWith('.json')) {
         const blobClient = containerClient.getBlockBlobClient(blob.name);
         const downloadResponse = await blobClient.download();
         const metadata = await streamToString(downloadResponse.readableStreamBody);

@@ -79,9 +79,20 @@ export default function Home() {
     }
   };
 
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+
   useEffect(() => {
-    const view = new EditorView({
-      parent: document.body,
+    if (!editorRef.current) return;
+
+    // Cleanup previous instance
+    if (viewRef.current) {
+      viewRef.current.destroy();
+    }
+
+    // Create new instance
+    viewRef.current = new EditorView({
+      parent: editorRef.current,
       doc: htmlContent,
       extensions: [
         basicSetup,
@@ -93,10 +104,15 @@ export default function Home() {
         }),
       ],
     });
+
     return () => {
-      view.destroy();
+      if (viewRef.current) {
+        viewRef.current.destroy();
+        viewRef.current = null;
+      }
     };
   }, [htmlContent]);
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -224,10 +240,12 @@ export default function Home() {
       </div>
       {session && <SavedMindmaps />}
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center justify-center h-screen">
+        {/* Top section with title, editor, and controls */}
+        <div className="w-full flex flex-col items-center justify-start pt-8 pb-4">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
             Youtube to <span className="text-blue-600">MindMap</span>
           </h1>
+         
           {!isVerified ? (
             <div className="flex flex-col items-center">
               <p className="mb-4 text-gray-600">
@@ -293,34 +311,41 @@ export default function Home() {
             </div>
           )}
         </div>
-        <iframe
-          title="HTML Preview"
-          style={{ width: "80%", height: "700px", border: "1px solid #ccc" }}
-          srcDoc={htmlContent}
-          allowFullScreen
-          className="mb-4 mt-4"
-          ref={iframeRef}
-        ></iframe>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={enterFullscreen}>
-            Go Fullscreen
-          </Button>
-          {session && (
-            <Button
-              variant="outline"
-              onClick={handleSave}
-              disabled={saving || !htmlContent}
-            >
-              {saving ? (
-                <Loader2 className="animate-spin w-4 h-4" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              Save Mindmap
+        
+        {/* Bottom section with HTML preview iframe */}
+        <div className="w-full flex flex-col items-center justify-end mt-auto">
+          <iframe
+            title="HTML Preview"
+            style={{ width: "80%", height: "700px", border: "1px solid #ccc" }}
+            srcDoc={htmlContent}
+            allowFullScreen
+            className="mb-4"
+            ref={iframeRef}
+          ></iframe>
+          <div className="flex gap-2 mb-8">
+            <Button variant="outline" onClick={enterFullscreen}>
+              Go Fullscreen
             </Button>
-          )}
+            {session && (
+              <Button
+                variant="outline"
+                onClick={handleSave}
+                disabled={saving || !htmlContent}
+              >
+                {saving ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                Save Mindmap
+              </Button>
+            )}
+           
+          </div>
+          <div ref={editorRef} className="w-full max-w-4xl mb-6 border rounded-lg p-4 overflow-auto" ></div>
         </div>
       </div>
+      
     </div>
   );
 }
