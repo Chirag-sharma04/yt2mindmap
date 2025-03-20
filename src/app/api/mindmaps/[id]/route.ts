@@ -5,26 +5,44 @@ import { getServerSession } from 'next-auth';
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING || '';
 const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
 
-export async function GET(request: Request, { params }: { params:  Promise<{ id : string }> }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const containerName = session.user.email.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const containerName = 'html';
     const containerClient = blobServiceClient.getContainerClient(containerName);
     
-    // Get the HTML content blob
-    const { id } = await params;
-    const blobName = `${id}.html`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    // Get the mindmap content
+    const { id } = params;
+    const userEmail = session.user.email.toLowerCase();
     
-    // Download the HTML content
-    const downloadResponse = await blockBlobClient.download();
-    const htmlContent = await streamToString(downloadResponse.readableStreamBody || null);
+    // Get metadata
+    const metadataBlobName = `${userEmail}/${id}.json`;
+    const metadataBlobClient = containerClient.getBlockBlobClient(metadataBlobName);
+    const metadataResponse = await metadataBlobClient.download();
+    const metadataContent = await streamToString(metadataResponse.readableStreamBody || null);
+    if (!metadataContent) {
+      return NextResponse.json({ error: 'Mindmap not found' }, { status: 404 });
+    }
+    const metadata = JSON.parse(metadataContent);
 
-    return NextResponse.json({ htmlContent });
+    // Get HTML content
+    const htmlBlobName = `${userEmail}/${id}.html`;
+    const htmlBlobClient = containerClient.getBlockBlobClient(htmlBlobName);
+    const htmlResponse = await htmlBlobClient.download();
+    const htmlContent = await streamToString(htmlResponse.readableStreamBody || null);
+    if (!htmlContent) {
+      return NextResponse.json({ error: 'Mindmap HTML content not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      metadata,
+      htmlContent
+    });
+
   } catch (error) {
     console.error('Error fetching mindmap:', error);
     return NextResponse.json(
