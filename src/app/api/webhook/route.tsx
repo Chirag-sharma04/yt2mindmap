@@ -15,11 +15,7 @@ let currentStep: ProcessingStep = 'initializing';
 
 // Function to update processing step
 async function updateStep(step: ProcessingStep) {
-  if (step === 'completed') {
-    currentStep = 'initializing';
-  } else {
-    currentStep = step;
-  }
+  currentStep = step;
   return { status: currentStep, progress: getProgressPercentage() };
 }
 
@@ -51,11 +47,17 @@ export async function POST(): Promise<NextResponse> {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    return NextResponse.json({
+    const response = {
       status: currentStep,
       progress: getProgressPercentage(),
       data: currentStep === 'completed' ? webhookData : null
-    });
+    };
+
+    if (currentStep === 'completed') {
+      currentStep = 'initializing';
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching task status:", error);
     return NextResponse.json(

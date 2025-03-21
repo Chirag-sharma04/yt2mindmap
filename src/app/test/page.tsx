@@ -177,7 +177,9 @@ export default function Home() {
           console.log("Task completed:", data.data);
           await new Promise(resolve => setTimeout(resolve, 3000));
           fetchHtmlContent();
-          return data.data;
+      await fetch('/api/webhook', { method: 'POST' });
+      return data.data;
+          
         }
 
         if (attempts > 0 && attempts % 5 === 0 && currentStepIndex < steps.length) {

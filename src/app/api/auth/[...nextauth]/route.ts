@@ -37,7 +37,7 @@ const handler = NextAuth({
         const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
         
         const { error } = await supabase
-          .from('chat_usage')
+          .from('mindmap_usage')
           .select('user_id')
           .eq('user_id', user.email)
           .single();
@@ -45,7 +45,7 @@ const handler = NextAuth({
         if (error && error.code === 'PGRST116') {
           // No record found - create initial record
           await supabase
-            .from('chat_usage')
+            .from('mindmap_usage')
             .insert([{ user_id: user.email, usage_count: 0 }]);
         }
 
