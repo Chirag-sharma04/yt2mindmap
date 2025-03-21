@@ -84,6 +84,27 @@ export default function Home() {
       setLoading(true);
       <Loader2 className="animate-spin"/>
       console.log("submit");
+
+      try {
+        const response = await fetch("/api/chat-usage", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: session?.user?.email,
+          }),
+        });
+        const data = await response.json();
+        if (data.usage_count > 3) {
+          setShowPricing(true);
+        } else {
+          setIsVerified(true);
+        }
+      } catch (error) {
+        console.error("Error updating usage count:", error);
+        setIsVerified(true);
+      }
         
       try {
         
@@ -149,7 +170,7 @@ export default function Home() {
               <p className="mb-4 text-gray-600">
                 Please complete the verification to continue
               </p>
-              {!sessionStorage.getItem("turnstile_verified") && (
+              {!isVerified && (
                 <Turnstile
                   onVerify={async () => {
                     try {
