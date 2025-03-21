@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
 // Define types for webhook data
 interface WebhookData {
@@ -7,20 +6,36 @@ interface WebhookData {
   data: Record<string, unknown>;
 }
 
+// Define processing steps
+type ProcessingStep = 'initializing' | 'processing' | 'analyzing' | 'finalizing' | 'completed';
+
 // Temporary in-memory storage (use a database in production)
-let webhookData: WebhookData | null = null;
-let taskCompleted: boolean = false;
+const webhookData: WebhookData | null = null;
+let currentStep: ProcessingStep = 'initializing';
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+// Function to update processing step
+async function updateStep(step: ProcessingStep) {
+  currentStep = step;
+  return { status: currentStep, progress: getProgressPercentage() };
+}
+
+// Helper function to calculate progress percentage
+function getProgressPercentage(): number {
+  const steps: ProcessingStep[] = ['initializing', 'processing', 'analyzing', 'finalizing', 'completed'];
+  const currentIndex = steps.indexOf(currentStep);
+  return Math.round((currentIndex / (steps.length - 1)) * 100);
+}
+
+export async function POST(): Promise<NextResponse> {
   try {
-    const body: WebhookData = await request.json();
-    console.log("Received webhook:", body); // Debugging log
+    // Get the next step based on current step
+    const steps: ProcessingStep[] = ['initializing', 'processing', 'analyzing', 'finalizing', 'completed'];
+    const currentIndex = steps.indexOf(currentStep);
+    const nextStep = steps[Math.min(currentIndex + 1, steps.length - 1)] as ProcessingStep;
 
-    // Store the received data
-    webhookData = body;
-    taskCompleted = true;
-
-    return NextResponse.json({ success: true, message: "Received webhook data" });
+    // Update to the next step
+    const status = await updateStep(nextStep);
+    return NextResponse.json({ success: true, ...status });
   } catch (error) {
     console.error("Error handling webhook:", error);
     return NextResponse.json(
@@ -32,11 +47,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    if (!taskCompleted) {
-      return NextResponse.json({ status: "pending" }); // Keep polling
-    }
-
-    return NextResponse.json({ status: "completed", data: webhookData });
+    return NextResponse.json({
+      status: currentStep,
+      progress: getProgressPercentage(),
+      data: currentStep === 'completed' ? webhookData : null
+    });
   } catch (error) {
     console.error("Error fetching task status:", error);
     return NextResponse.json(

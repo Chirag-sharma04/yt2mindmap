@@ -199,8 +199,12 @@ export default function Home() {
     }
     setSaving(true);
     try {
-      const response = await fetch("/api/mindmaps", {
-        method: "POST",
+      const urlParams = new URLSearchParams(window.location.search);
+      const mindmapId = urlParams.get("id");
+      const endpoint = mindmapId ? `/api/mindmaps/${mindmapId}` : "/api/mindmaps";
+      const method = mindmapId ? "PUT" : "POST";
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -316,7 +320,7 @@ export default function Home() {
         <div className="w-full flex flex-col items-center justify-end mt-auto">
           <iframe
             title="HTML Preview"
-            style={{ width: "80%", height: "700px", border: "1px solid #ccc" }}
+            style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
             srcDoc={htmlContent}
             allowFullScreen
             className="mb-4"
@@ -342,7 +346,7 @@ export default function Home() {
             )}
            
           </div>
-          <div ref={editorRef} className="w-full max-w-4xl mb-6 border rounded-lg p-4 overflow-auto" ></div>
+          <div ref={editorRef} className="w-full max-w-4xl mb-6 border rounded-lg p-4 overflow-auto" style={{ height: "300px" }}></div>
         </div>
       </div>
       
