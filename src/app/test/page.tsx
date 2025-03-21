@@ -32,7 +32,7 @@ export default function Home() {
         });
       }
     };
-   
+    
     
     const fetchHtmlContent = async () => {
       setLoading(true);
@@ -80,6 +80,58 @@ export default function Home() {
       
     }; // This will log the updated htmlContent
   }); // Runs every time htmlContent changes
+
+  
+  const handleSubmitWebhook = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/yt-transcript-webhook-old', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: inputValue }),
+      });
+
+      if (response.ok) {
+        console.log("Webhook submitted successfully. Checking status...");
+        const result = await checkTaskStatus();
+        console.log("Received webhook data:", result);
+      } else {
+        console.error("Failed to submit webhook:", await response.text());
+      }
+    } catch (error) {
+      console.error("Error submitting webhook:", error);
+    } finally {
+      setLoading(false);
+    }
+};
+
+const checkTaskStatus = async (maxRetries = 20, interval = 5000) => {
+    try {
+      let attempts = 0;
+
+      while (attempts < maxRetries) {
+        const res = await fetch(`/api/webhook`);
+        const data = await res.json();
+
+        if (data.status === "completed") {
+          console.log("Task completed. Data received:", data.data);
+          return data.data; // Return data to frontend
+        }
+
+        console.log(`Task still in progress... (Attempt ${attempts + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, interval));
+        attempts++;
+      }
+
+      console.error("Task polling timed out.");
+    } catch (error) {
+      console.error("Error checking task status:", error);
+    }
+};
+
+  
   const handleSubmit = async () => {
       setLoading(true);
       <Loader2 className="animate-spin"/>
@@ -214,6 +266,17 @@ export default function Home() {
                   <Loader2 className="animate-spin w-4 h-4" />
                 ) : (
                   "Try Free"
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSubmitWebhook}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin w-4 h-4" />
+                ) : (
+                  "Test webhook"
                 )}
               </Button>
             </>

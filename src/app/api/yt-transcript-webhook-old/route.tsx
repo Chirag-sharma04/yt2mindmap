@@ -8,7 +8,8 @@ export async function POST(request: Request) {
         const body = await request.json()
         const taskId = Math.random().toString(36).substring(7);
         // Send the transcript to Taskade webhook
-        const webhookUrl = 'https://www.taskade.com/webhooks/flow/01JPS7AYEE7Z65CKD7WXECGBYA';
+        //const webhookUrl = 'https://www.taskade.com/webhooks/flow/01JPS7AYEE7Z65CKD7WXECGBYA';
+        const webhookUrl = 'https://www.taskade.com/webhooks/flow/01JPVYF7DR15QS6PNPD268ZHGC';
         const response = await fetch(webhookUrl, {
             method: 'POST',
             headers: {
