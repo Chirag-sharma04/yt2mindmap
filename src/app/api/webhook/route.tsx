@@ -15,7 +15,11 @@ let currentStep: ProcessingStep = 'initializing';
 
 // Function to update processing step
 async function updateStep(step: ProcessingStep) {
-  currentStep = step;
+  if (step === 'completed') {
+    currentStep = 'initializing';
+  } else {
+    currentStep = step;
+  }
   return { status: currentStep, progress: getProgressPercentage() };
 }
 
