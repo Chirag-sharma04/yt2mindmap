@@ -6,7 +6,8 @@ export async function POST(request: Request) {
         
       // Get request data
         const body = await request.json()
-        const taskId = Math.random().toString(36).substring(7);
+        const taskId = body.taskId;
+        console.log(taskId);
         // Send the transcript to Taskade webhook
         //const webhookUrl = 'https://www.taskade.com/webhooks/flow/01JPS7AYEE7Z65CKD7WXECGBYA';
         const webhookUrl = 'https://www.taskade.com/webhooks/flow/01JNNWZPBEBK343J2KFM3BRTCB';
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ transcript: body.url, id: taskId }),
+            body: JSON.stringify({ transcript: body.url, taskId: taskId }),
         });
+        console.log("sent to taskade")
         return NextResponse.json({ 
             success: true, 
             response,

@@ -81,7 +81,7 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          title: 'My Mindmap',
+          title: `Mindmap - ${new Date().toLocaleString()}`, 
           youtubeUrl: inputValue,
           htmlContent: currentHtml,
         }),
@@ -140,14 +140,26 @@ export default function Home() {
   const handleSubmitWebhook = async () => {
     setLoading(true);
     try {
+      const taskId = Math.random().toString(36).substring(2);
       const response = await fetch('/api/yt-transcript-webhook-old', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: inputValue }),
+        body: JSON.stringify({ url: inputValue, taskId }),
       });
+      console.log("sent to taskade")
       if (response.ok) {
+        // Increment chat usage count
+        await fetch('/api/chat-usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        await fetch('/api/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taskId }),
+        });
         console.log("Webhook submitted successfully.");
-        await checkTaskStatus();
+        await checkTaskStatus(taskId);
       } else {
         console.error("Failed to submit webhook:", await response.text());
       }
@@ -157,73 +169,47 @@ export default function Home() {
       setLoading(false);
     }
   };
-
   const [currentStep, setCurrentStep] = useState('');
-  const [progress, setProgress] = useState(0);
+  const loadingMessages = [
+    'Processing video transcript...',
+    'Analyzing content structure...',
+    'Generating mindmap layout...',
+    'Optimizing node connections...',
+    'Applying visual styles...',
+    'Finalizing mindmap...'
+  ];
+  const [messageIndex, setMessageIndex] = useState(0);
 
-  const checkTaskStatus = async (maxRetries = 20, interval = 5000) => {
+  const checkTaskStatus = async (taskId: string, maxRetries = 20, interval = 5000) => {
     let attempts = 0;
-    const steps = ['initializing', 'processing', 'analyzing', 'finalizing'];
-    let currentStepIndex = 0;
+    const messageInterval = setInterval(() => {
+      setMessageIndex(prev => (prev + 1) % loadingMessages.length);
+    }, 10000);
 
     while (attempts < maxRetries) {
       try {
-        const res = await fetch(`/api/webhook`);
+        const res = await fetch(`/api/webhook?taskId=${taskId}`);
         const data = await res.json();
         setCurrentStep(data.status);
-        setProgress(data.progress || (currentStepIndex / steps.length) * 100);
-
-        if (data.status === 'completed') {
-          console.log("Task completed:", data.data);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+        if (data.task.status == 'complete') {
+          clearInterval(messageInterval);
+          setLoading(false)
+          console.log("Task completed");
+          await new Promise(resolve => setTimeout(resolve, 2000));
           fetchHtmlContent();
       await fetch('/api/webhook', { method: 'POST' });
       return data.data;
-          
         }
-
-        if (attempts > 0 && attempts % 5 === 0 && currentStepIndex < steps.length) {
-          const nextStep = steps[currentStepIndex];
-          await fetch(`/api/webhook?step=${nextStep}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ event: 'progress', data: {} }),
-          });
-          currentStepIndex++;
-        }
-
         await new Promise(resolve => setTimeout(resolve, interval));
         attempts++;
       } catch (error) {
         console.error("Error checking task status:", error);
+        clearInterval(messageInterval);
       }
     }
     console.error("Task polling timed out.");
+    clearInterval(messageInterval);
   };
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/chat-usage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: session?.user?.email }),
-      });
-      const data = await response.json();
-      if (data.usage_count > 3) {
-        setShowPricing(true);
-      } else {
-        setIsVerified(true);
-        await handleSubmitWebhook();
-      }
-    } catch (error) {
-      console.error("Error updating usage count:", error);
-      setIsVerified(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const enterFullscreen = () => {
     const iframe = iframeRef.current;
@@ -231,7 +217,6 @@ export default function Home() {
       iframe.requestFullscreen();
     }
   };
-
   return (
     <div className="flex h-screen">
       <PricingPortal isOpen={showPricing} />
@@ -249,14 +234,12 @@ export default function Home() {
           {!isVerified ? (
             <div className="flex flex-col items-center">
               <p className="mb-4 text-gray-600">Please complete the verification to continue</p>
-              {!isVerified && (
+              {(
                 <Turnstile
                   onVerify={async () => {
                     try {
                       const response = await fetch("/api/chat-usage", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: session?.user?.email }),
+                        method: "GET",
                       });
                       const data = await response.json();
                       if (data.usage_count > 3) {
@@ -280,9 +263,6 @@ export default function Home() {
                 onChange={(e) => setInputValue(e.target.value)}
                 className="pl-2 pr-2 w-1/2 justify-center mb-6"
               />
-              <Button variant="outline" onClick={handleSubmit} disabled={loading}>
-                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : "Try Free"}
-              </Button>
               <Button variant="outline" onClick={handleSubmitWebhook} disabled={loading}>
                 {loading ? <Loader2 className="animate-spin w-4 h-4" /> : "Test Webhook"}
               </Button>
@@ -290,17 +270,12 @@ export default function Home() {
           )}
           {loading && (
             <div className="justify-center">
-              <p>{"Processing"}</p>
+              <p>{loadingMessages[messageIndex]}</p>
               {currentStep && (
                 <div className="mt-2 text-center">
                   <p className="text-sm text-gray-600 capitalize">{currentStep}</p>
                   <div className="w-64 h-2 bg-gray-200 rounded-full mt-2">
-                    <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                      style={{ width: `${progress}%` }}
-                    ></div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{Math.round(progress)}%</p>
                 </div>
               )}
             </div>
