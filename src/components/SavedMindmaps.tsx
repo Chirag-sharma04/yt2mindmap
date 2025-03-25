@@ -44,24 +44,27 @@ export default function SavedMindmaps() {
   }
 
   return (
-    <div className="w-64 h-screen bg-gray-100 p-4 overflow-y-auto">
-      <h2 className="text-lg font-semibold mb-4">Saved Mindmaps</h2>
+    <div className="w-64 h-screen bg-gray-50 p-6 overflow-y-auto border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out">
+      <h2 className="text-xl font-semibold mb-6 text-gray-800">Saved Mindmaps</h2>
       {loading ? (
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {mindmaps.map((mindmap) => (
-            <div key={mindmap.id} className="p-3 bg-white rounded-lg shadow-sm">
-              <h3 className="font-medium text-sm truncate">{mindmap.title}</h3>
-              <p className="text-xs text-gray-500 truncate">{mindmap.youtubeUrl}</p>
-              <div className="mt-2 flex space-x-2">
+            <div
+              key={mindmap.id}
+              className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ease-in-out border border-gray-100 hover:border-blue-200"
+            >
+              <h3 className="font-medium text-gray-800 truncate mb-1">{mindmap.title}</h3>
+              <p className="text-xs text-gray-500 truncate mb-3">{mindmap.youtubeUrl}</p>
+              <div className="flex justify-end">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
-                  onClick={() => window.location.href = `/mindmap?id=${mindmap.id}`}
+                  className="w-24 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  onClick={() => window.location.href = `/test?id=${mindmap.id}`}
                 >
                   Open
                 </Button>

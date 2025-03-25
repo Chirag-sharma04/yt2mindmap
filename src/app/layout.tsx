@@ -23,7 +23,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <Header />
-          {children}
+          <main className="min-h-[calc(100vh-160px)]">
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>
