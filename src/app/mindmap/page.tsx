@@ -52,8 +52,6 @@ export default function Home() {
     const mindmapId = urlParams?.get("id");
     if (mindmapId) {
       loadSavedMindmap(mindmapId);
-    } else {
-      fetchHtmlContent();
     }
     if (typeof window !== "undefined") {
       const storedToken = sessionStorage.getItem("turnstile_verified");
@@ -98,11 +96,13 @@ export default function Home() {
     }
   };
 
-  const fetchHtmlContent = async () => {
+  const fetchHtmlContent = async (taskId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('https://yt2mapapi.blob.core.windows.net/html/test.html', { cache: 'no-store' });
+      const userEmail = session?.user?.email || 'anonymous';
+      const response = await fetch(`https://yt2mapapi.blob.core.windows.net/html/user-${userEmail.split('@')[0]}/${taskId}.html`, { cache: 'no-store' });
       const text = await response.text();
+      
       setHtmlContent(text);
       if (editorRef.current) {
         editorRef.current.dispatch({
@@ -156,7 +156,7 @@ export default function Home() {
         await fetch('/api/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId }),
+          body: JSON.stringify({ taskId, email: session?.user?.email }),
         });
         console.log("Webhook submitted successfully.");
         await checkTaskStatus(taskId);
@@ -196,7 +196,7 @@ export default function Home() {
           setLoading(false)
           console.log("Task completed");
           await new Promise(resolve => setTimeout(resolve, 2000));
-          fetchHtmlContent();
+          fetchHtmlContent(taskId);
       await fetch('/api/webhook', { method: 'POST' });
       return data.data;
         }

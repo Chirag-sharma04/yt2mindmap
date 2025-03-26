@@ -7,6 +7,7 @@ interface WebhookData {
   event: string;
   taskId: string;
   data: Record<string, unknown>;
+  email?: string;
 }
 
 // Define task structure
@@ -14,6 +15,7 @@ interface TaskData {
   taskId: string;
   status: string;
   progress: number;
+  email?: string;
   data: WebhookData;
   createdAt: string;
   updatedAt: string;
@@ -63,7 +65,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       taskId: taskId,
       status: "pending",
       progress: 0,
-      data: body,
+      email: body.email,
+      data: body as WebhookData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
