@@ -20,6 +20,8 @@ export default function Home() {
   const editorRef = useRef<EditorView | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [TaskId, setTaskId] = useState('');
+  const [mode, setMode] = useState<'youtube' | 'longtext'>('youtube');
   const [showPricing, setShowPricing] = useState(false);
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function Home() {
       const currentHtml = editorRef.current?.state.doc.toString() || htmlContent;
       const urlParams = new URLSearchParams(window.location.search);
       const mindmapId = urlParams.get('id');
-      const endpoint = mindmapId ? `/api/mindmaps/${mindmapId}` : '/api/mindmaps';
+      const endpoint = mindmapId ? `/api/mindmaps/${mindmapId}` : `/api/mindmaps/${TaskId}`;
       const method = mindmapId ? 'PUT' : 'POST';
       const response = await fetch(endpoint, {
         method,
@@ -197,6 +199,7 @@ export default function Home() {
           console.log("Task completed");
           await new Promise(resolve => setTimeout(resolve, 2000));
           fetchHtmlContent(taskId);
+          setTaskId(taskId)
       await fetch('/api/webhook', { method: 'POST' });
       return data.data;
         }
@@ -228,9 +231,25 @@ export default function Home() {
       <div className="flex-1 flex flex-col items-center pb-[80px]"> {/* Added padding-bottom for footer */}
         {/* Top section: Input and Controls */}
         <div className="w-full flex flex-col items-center justify-start pt-8 pb-4">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
-            Youtube to <span className="text-blue-600">MindMap</span>
-          </h1>
+          <div className="flex flex-col items-center gap-4">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
+              Youtube to <span className="text-blue-600">MindMap</span>
+            </h1>
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant={mode === 'youtube' ? 'default' : 'outline'}
+                onClick={() => setMode('youtube')}
+              >
+                YouTube
+              </Button>
+              <Button
+                variant={mode === 'longtext' ? 'default' : 'outline'}
+                onClick={() => setMode('longtext')}
+              >
+                Long Text
+              </Button>
+            </div>
+          </div>
           {!isVerified ? (
             <div className="flex flex-col items-center">
               <p className="mb-4 text-gray-600">Please complete the verification to continue</p>

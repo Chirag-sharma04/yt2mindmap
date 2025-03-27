@@ -52,6 +52,8 @@ export default function Home() {
     const mindmapId = urlParams?.get("id");
     if (mindmapId) {
       loadSavedMindmap(mindmapId);
+    } else {
+      fetchHtmlContent();
     }
     if (typeof window !== "undefined") {
       const storedToken = sessionStorage.getItem("turnstile_verified");
@@ -96,11 +98,10 @@ export default function Home() {
     }
   };
 
-  const fetchHtmlContent = async (taskId: string) => {
+  const fetchHtmlContent = async () => {
     setLoading(true);
     try {
-      const userEmail = session?.user?.email || 'anonymous';
-      const response = await fetch(`https://yt2mapapi.blob.core.windows.net/html/user-${userEmail.split('@')[0]}/${taskId}`, { cache: 'no-store' });
+      const response = await fetch('https://yt2mapapi.blob.core.windows.net/html/test.html', { cache: 'no-store' });
       const text = await response.text();
       setHtmlContent(text);
       if (editorRef.current) {
@@ -195,7 +196,7 @@ export default function Home() {
           setLoading(false)
           console.log("Task completed");
           await new Promise(resolve => setTimeout(resolve, 2000));
-          fetchHtmlContent(taskId);
+          fetchHtmlContent();
       await fetch('/api/webhook', { method: 'POST' });
       return data.data;
         }
