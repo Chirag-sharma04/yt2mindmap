@@ -64,7 +64,7 @@ export default function SavedMindmaps() {
                   variant="outline"
                   size="sm"
                   className="w-24 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                  onClick={() => window.location.href = `/test?id=${mindmap.id}`}
+                  onClick={() => window.location.href = `/mindmap?id=${mindmap.id}`}
                 >
                   Open
                 </Button>

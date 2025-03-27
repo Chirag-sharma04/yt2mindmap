@@ -20,6 +20,8 @@ export default function Home() {
   const editorRef = useRef<EditorView | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [TaskId, setTaskId] = useState('');
+  const [mode, setMode] = useState<'youtube' | 'longtext'>('youtube');
   const [showPricing, setShowPricing] = useState(false);
 
   useEffect(() => {
@@ -52,8 +54,6 @@ export default function Home() {
     const mindmapId = urlParams?.get("id");
     if (mindmapId) {
       loadSavedMindmap(mindmapId);
-    } else {
-      fetchHtmlContent();
     }
     if (typeof window !== "undefined") {
       const storedToken = sessionStorage.getItem("turnstile_verified");
@@ -73,7 +73,7 @@ export default function Home() {
       const currentHtml = editorRef.current?.state.doc.toString() || htmlContent;
       const urlParams = new URLSearchParams(window.location.search);
       const mindmapId = urlParams.get('id');
-      const endpoint = mindmapId ? `/api/mindmaps/${mindmapId}` : '/api/mindmaps';
+      const endpoint = mindmapId ? `/api/mindmaps/${mindmapId}` : `/api/mindmaps/${TaskId}`;
       const method = mindmapId ? 'PUT' : 'POST';
       const response = await fetch(endpoint, {
         method,
@@ -98,11 +98,13 @@ export default function Home() {
     }
   };
 
-  const fetchHtmlContent = async () => {
+  const fetchHtmlContent = async (taskId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('https://yt2mapapi.blob.core.windows.net/html/test.html', { cache: 'no-store' });
+      const userEmail = session?.user?.email || 'anonymous';
+      const response = await fetch(`https://yt2mapapi.blob.core.windows.net/html/user-${userEmail.split('@')[0]}/${taskId}.html`, { cache: 'no-store' });
       const text = await response.text();
+      
       setHtmlContent(text);
       if (editorRef.current) {
         editorRef.current.dispatch({
@@ -156,7 +158,7 @@ export default function Home() {
         await fetch('/api/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId }),
+          body: JSON.stringify({ taskId, email: session?.user?.email }),
         });
         console.log("Webhook submitted successfully.");
         await checkTaskStatus(taskId);
@@ -196,7 +198,8 @@ export default function Home() {
           setLoading(false)
           console.log("Task completed");
           await new Promise(resolve => setTimeout(resolve, 2000));
-          fetchHtmlContent();
+          fetchHtmlContent(taskId);
+          setTaskId(taskId)
       await fetch('/api/webhook', { method: 'POST' });
       return data.data;
         }
@@ -228,9 +231,25 @@ export default function Home() {
       <div className="flex-1 flex flex-col items-center pb-[80px]"> {/* Added padding-bottom for footer */}
         {/* Top section: Input and Controls */}
         <div className="w-full flex flex-col items-center justify-start pt-8 pb-4">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
-            Youtube to <span className="text-blue-600">MindMap</span>
-          </h1>
+          <div className="flex flex-col items-center gap-4">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-6">
+              Youtube to <span className="text-blue-600">MindMap</span>
+            </h1>
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant={mode === 'youtube' ? 'default' : 'outline'}
+                onClick={() => setMode('youtube')}
+              >
+                YouTube
+              </Button>
+              <Button
+                variant={mode === 'longtext' ? 'default' : 'outline'}
+                onClick={() => setMode('longtext')}
+              >
+                Long Text
+              </Button>
+            </div>
+          </div>
           {!isVerified ? (
             <div className="flex flex-col items-center">
               <p className="mb-4 text-gray-600">Please complete the verification to continue</p>

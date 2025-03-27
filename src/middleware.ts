@@ -11,7 +11,10 @@ export async function middleware(request: NextRequest) {
       // Redirect to login page if accessing mindmap without auth
       return NextResponse.redirect(new URL('/login', request.url))
     }
-
+    if (request.nextUrl.pathname.startsWith('/test') && !token) {
+      // Redirect to login page if accessing mindmap without auth
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
     return NextResponse.next()
   } catch (error) {
     console.error('Authentication error:', error)

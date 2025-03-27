@@ -156,7 +156,7 @@ export default function Home() {
         await fetch('/api/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ taskId }),
+          body: JSON.stringify({ taskId, email: session?.user?.email }),
         });
         console.log("Webhook submitted successfully.");
         await checkTaskStatus(taskId);
