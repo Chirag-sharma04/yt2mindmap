@@ -6,7 +6,7 @@ openGraph:
   title: "How AI Enhances Mind Mapping Creativity and Productivity"
   description: "Learn how AI enhances creativity, productivity, and organization in mind mapping. Explore real-world applications and examples across various industries."
   images:
-    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/sparklog//ai-mind-map-enhancement.webp" # Replace with your actual image URL
+    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/yt2insight//ai-mind-map-enhancement.jpeg" # Replace with your actual image URL
       width: 1200
       height: 630
       alt: "A visual representation of AI enhancing a mind map, showing increased creativity and productivity with AI icons and vibrant branches."

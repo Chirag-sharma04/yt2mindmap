@@ -6,7 +6,7 @@ openGraph:
   title: "Best AI Mind Mapping Tools & Software: Detailed Comparison"
   description: "Detailed comparison of AI mind mapping tools like Ayoa, EdrawMind, Whimsical AI, XMind, MindMeister, and Miro. Find the best software for brainstorming, project planning, and creative collaboration."
   images:
-    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/sparklog//ai-mind-map-comparison.webp" # Replace with your actual image URL
+    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/yt2insight//ai-mind-map-tools.jpeg" # Replace with your actual image URL
       width: 1200
       height: 630
       alt: "A comparison table of AI mind mapping tools with icons and features, highlighting the best tools for various use cases."

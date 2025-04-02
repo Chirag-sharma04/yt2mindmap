@@ -6,7 +6,7 @@ openGraph:
   title: "Unlock Your Thinking: The Ultimate Guide to AI-Powered Mind Mapping"
   description: "Learn how to leverage AI in mind mapping for enhanced creativity, productivity, and collaboration. Explore step-by-step guides, advanced techniques, and common pitfalls to avoid."
   images:
-    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/sparklog//ai-mind-map.webp" # Replace with your actual image URL
+    - url: "https://eobemzviqxxlcrwuygkr.supabase.co/storage/v1/object/public/yt2insight//ai-mind-map-intro.jpeg" # Replace with your actual image URL
       width: 1200
       height: 630
       alt: "A digital mind map with a central AI icon, branching out into various colorful concepts, symbolizing AI-powered creativity."
